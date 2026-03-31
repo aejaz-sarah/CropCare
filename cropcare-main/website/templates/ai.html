@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CropCare - AI Disease Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f3f8f2, #e8f5e9);
+        color: #1f2937;
+      }
+
+      .page {
+        max-width: 760px;
+        margin: 60px auto;
+        background: white;
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        border-top: 6px solid #009b4d;
+      }
+
+      h1 {
+        margin-top: 0;
+        color: #009b4d;
+        text-align: center;
+      }
+
+      p {
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      form {
+        margin: 24px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+      }
+
+      input[type="file"] {
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 420px;
+      }
+
+      input[type="submit"] {
+        background-color: #009b4d;
+        color: #fff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #06773c;
+      }
+
+      .flash-messages {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+      }
+
+      .flash-messages li {
+        background: #fff4d6;
+        color: #7c5c00;
+        border: 1px solid #ffe08a;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+      }
+
+      .actions {
+        text-align: center;
+        margin-top: 18px;
+      }
+
+      .actions a {
+        display: inline-block;
+        margin: 0 8px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        color: white;
+        background: #2563eb;
+      }
+
+      .actions a.home {
+        background: #2d6a4f;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>AI Disease Detection</h1>
+      <p>Upload a crop image to use the existing disease detection tool.</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ form.file() }}
+        {{ form.submit() }}
+      </form>
+
+      <div class="actions">
+        <a href="{{ url_for('home') }}" class="home">Home</a>
+        <a href="{{ url_for('crop_info') }}">CropInfo</a>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+# Python environments
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Editor / local settings
+.vscode/
+.env
+.DS_Store
+
+# Project-specific generated files
+cropcare-main/website/static/uploads/
+cropcare-main/website/plant_disease_prediction_model.h5

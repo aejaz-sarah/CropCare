@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CropCare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(rgba(12, 45, 18, 0.68), rgba(12, 45, 18, 0.68)), url("{{ url_for('static', filename='background.png') }}") center/cover no-repeat;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 980px;
+            text-align: center;
+        }
+
+        .hero-logo {
+            display: block;
+            width: min(100%, 560px);
+            margin: 0 auto 14px;
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.22));
+        }
+
+        .subtitle {
+            font-size: 1.08rem;
+            margin-bottom: 34px;
+            color: #e6f6e9;
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+
+        .card {
+            display: block;
+            text-decoration: none;
+            color: #1f2937;
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            padding: 28px 24px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: left;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #009b4d;
+        }
+
+        .card p {
+            margin: 0 0 16px;
+            line-height: 1.6;
+        }
+
+        .open-label {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #009b4d;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <img src="{{ url_for('static', filename='logobg1.png') }}" alt="CropCare" class="hero-logo">
+        <p class="subtitle">Choose one section to continue.</p>
+
+        <div class="sections">
+            <a class="card" href="{{ url_for('crop_info') }}">
+                <h2>CropInfo</h2>
+                <p>Search for a crop and view simple, structured information with sources, live price data, season guidance, and optional weather-based planning.</p>
+                <span class="open-label">Open CropInfo</span>
+            </a>
+
+            <a class="card" href="{{ url_for('index') }}">
+                <h2>AI Disease Detection</h2>
+                <p>Open the image upload page and use the existing AI tool for plant disease detection from a crop image.</p>
+                <span class="open-label">Open AI Disease Detection</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+

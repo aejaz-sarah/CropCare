@@ -1,0 +1,8 @@
+/website/plantmodel.h5
+/website/plant_model.h5
+/website/plant_disease_prediction_model.h5
+/website/static/uploads/
+__pycache__/
+*.py[cod]
+/test/
+/tutorial/
