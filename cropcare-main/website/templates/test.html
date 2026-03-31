@@ -27,11 +27,22 @@
         padding-bottom: 30px;
       }
 
-      .container img {
-        width: 500px;
-        height: 200px;
-        display: block;
-        margin: 30px auto 10px;
+      .page-title {
+        width: fit-content;
+        margin: 34px auto 22px;
+        padding: 14px 28px;
+        text-align: center;
+        color: #ffffff;
+        font-size: 2.1rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        border: 2px solid rgba(255, 255, 255, 0.75);
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(20, 83, 45, 0.82), rgba(76, 175, 80, 0.55));
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
       }
 
       .search-container {
@@ -131,7 +142,7 @@
   </head>
   <body>
     <div class="container glass">
-      <img src="{{ url_for('static', filename='logobg1.png') }}" />
+      <div class="page-title">Crop Information</div>
 
       <div class="search-container">
         <form method="POST" action="{{ url_for('crop_info') }}">

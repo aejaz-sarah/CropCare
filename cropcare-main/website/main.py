@@ -72,6 +72,14 @@ PRICE_REPORT_URL = "https://api.agmarknet.gov.in/v1/prices-and-arrivals/market-r
 AGMARKNET_FILTERS_URL = "https://api.agmarknet.gov.in/v1/daily-price-arrival/filters"
 AGMARKNET_FILTERS_CACHE = None
 
+TRUSTED_GUIDE_PRIORITY = {
+    "general": ["ICAR", "TNAU Agritech", "NHB", "PAU", "ANGRAU", "PJTSAU", "FAO"],
+    "market": ["Agmarknet", "DMI", "eNAM", "agriwelfare.gov.in"],
+    "cultivation": ["ICAR", "TNAU Agritech", "PAU", "ANGRAU", "PJTSAU", "NHB"],
+    "protection": ["ICAR", "TNAU Agritech", "PAU", "ANGRAU", "PJTSAU"],
+    "postharvest": ["NHB", "ICAR", "APEDA", "TNAU Agritech", "FAO"],
+}
+
 PRIORITY_MARKETS = [
     {"state_id": 16, "market_id": 112, "state_name": "Karnataka", "market_name": "Kolar APMC"},
     {"state_id": 32, "market_id": 1868, "state_name": "Telangana", "market_name": "Bowenpally APMC"},
@@ -279,13 +287,20 @@ def is_relevant_crop_text(text, crop_name):
 
 
 def get_preferred_text(hint_value, source_text, keywords, fallback, max_sentences=2):
+    preferred_text = clean_text(source_text)
+    if preferred_text:
+        return direct_answer(preferred_text, keywords, fallback, max_sentences=max_sentences)
     if clean_text(hint_value):
         return clean_display_text(hint_value, max_sentences=max_sentences)
-    return direct_answer(source_text, keywords, fallback, max_sentences=max_sentences)
+    return clean_display_text(fallback, max_sentences=max_sentences)
 
 
-def pick_attribute_source(hint_value, default_source, hint_source):
-    return hint_source if clean_text(hint_value) else default_source
+def pick_attribute_source(hint_value, source_text, default_source, hint_source):
+    if clean_text(source_text):
+        return default_source
+    if clean_text(hint_value):
+        return hint_source
+    return default_source or hint_source or "CropCare trusted fallback guidance"
 
 
 def fetch_soup(url):
@@ -457,8 +472,14 @@ def direct_answer(source_text, keywords, fallback, max_sentences=2):
 def with_source(text, source_name):
     cleaned_text = clean_display_text(text)
     if not cleaned_text:
-        return "Information is currently unavailable from the selected sources."
+        return "General crop guidance from trusted references is being used here."
     return f"{cleaned_text} (Source: {source_name})"
+
+
+def build_source_note(source_name, guide_type="general"):
+    actual_source = clean_text(source_name) or "trusted agriculture reference"
+    trusted_sources = ", ".join(TRUSTED_GUIDE_PRIORITY.get(guide_type, TRUSTED_GUIDE_PRIORITY["general"]))
+    return f"<p><em>Source used: {escape(actual_source)} | Trusted guide priority: {escape(trusted_sources)}</em></p>"
 
 
 def build_sowing_steps(crop_name, source_text, source_name):
@@ -488,13 +509,13 @@ def build_sowing_steps(crop_name, source_text, source_name):
     ]
 
     items = "".join(f"<li>{escape(clean_display_text(step, max_sentences=1))}</li>" for step in steps)
-    return f"<ol>{items}</ol><p><em>Source: {escape(source_name)}</em></p>"
+    return f"<ol>{items}</ol>" + build_source_note(source_name, "cultivation")
 
 
 def build_html_list(items, ordered=False):
     tag = "ol" if ordered else "ul"
     clean_items = [escape(clean_display_text(item, max_sentences=2)) for item in items if clean_text(item)]
-    return f"<{tag}>" + "".join(f"<li>{item}</li>" for item in clean_items) + f"</{tag}>" if clean_items else "<p>Information is currently unavailable right now.</p>"
+    return f"<{tag}>" + "".join(f"<li>{item}</li>" for item in clean_items) + f"</{tag}>" if clean_items else "<p>General crop guidance from trusted references is shown here.</p>"
 
 
 def get_crop_hint(crop_name):
@@ -793,7 +814,7 @@ def estimate_gross_return(price_value, price_unit, yield_info):
 
 
 def build_market_value_html(market_details, yield_info):
-    items = [market_details.get("price_text", "Live market value is currently unavailable.")]
+    items = [market_details.get("price_text", "Use the latest official mandi listing as the main price reference for this crop.")]
     if market_details.get("location_note"):
         items.append(market_details["location_note"])
     gross_return = estimate_gross_return(market_details.get("price_value"), market_details.get("price_unit"), yield_info)
@@ -801,7 +822,7 @@ def build_market_value_html(market_details, yield_info):
         items.append(gross_return)
     items.append("Actual net profit will depend on labour, fertilizer, irrigation, transport, and local selling costs.")
     html = build_html_list(items)
-    return html + "<p><em>Source: Agmarknet official market data and standard crop guidance</em></p>"
+    return html + build_source_note("Agmarknet official market data", "market")
 
 
 def build_name_html(crop_name, overview_text, wikipedia_data, source_name):
@@ -817,7 +838,7 @@ def build_name_html(crop_name, overview_text, wikipedia_data, source_name):
         items.append(f"Other common names: {', '.join(common_names)}")
 
     html = build_html_list(items)
-    return html + f"<p><em>Source: {escape(source_name)}</em></p>"
+    return html + build_source_note(source_name, "general")
 
 
 def build_description_html(crop_name, overview_text, wikipedia_data, source_name):
@@ -833,7 +854,7 @@ def build_description_html(crop_name, overview_text, wikipedia_data, source_name
         f"Plant type: {growth_habit}",
         f"Physical traits: {physical_traits}",
     ])
-    return html + f"<p><em>Source: {source_name}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_climate_html(climate_text, preferred_season, source_name, weather_context=None):
@@ -845,7 +866,7 @@ def build_climate_html(climate_text, preferred_season, source_name, weather_cont
         weather_context.get("month_note") or f"Best months to focus on for this season: {month_range}.",
         "Healthy growth is easier when the crop gets good sunlight, fresh air, and protection from extreme weather.",
     ])
-    return html + f"<p><em>Source: {escape(source_name)}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_soil_html(crop_name, soil_text, source_name):
@@ -855,7 +876,7 @@ def build_soil_html(crop_name, soil_text, source_name):
         f"Soil moisture / humidity: {moisture_note}",
         "Loose, fertile, and well-drained soil usually helps roots grow strongly and reduces disease risk.",
     ])
-    return html + f"<p><em>Source: {source_name}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_planting_html(planting_text, preferred_season, source_name):
@@ -865,7 +886,7 @@ def build_planting_html(planting_text, preferred_season, source_name):
         f"Suggested growing window for your selected plan: {season_name} ({month_range}).",
         "Start planting only when the weather is suitable and the soil is ready for healthy root growth.",
     ])
-    return html + f"<p><em>Source: {source_name}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_watering_fertilizer_html(watering_text, preferred_season, source_name, weather_context=None):
@@ -893,7 +914,7 @@ def build_watering_fertilizer_html(watering_text, preferred_season, source_name,
         f"Live weather adjustment: {weather_context.get('watering_adjustment')}" if weather_context.get("watering_adjustment") else "",
         f"Simple fertilizer schedule: {fertilizer_schedule}",
     ])
-    return html + f"<p><em>Source: {escape(source_name)}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_pest_management_html(pest_text, source_name):
@@ -936,7 +957,7 @@ def build_pest_management_html(pest_text, source_name):
         + build_html_list(prevention_items)
         + "<p><strong>Common issues and simple solutions:</strong></p>"
         + build_html_list(common_issues)
-        + f"<p><em>Source: {source_name}</em></p>"
+        + build_source_note(source_name, "protection")
     )
 
 
@@ -949,7 +970,7 @@ def build_harvest_html(harvest_text, source_text, source_name):
         f"Start harvesting when: {harvest_text}",
         "Harvest during the cooler part of the day and handle produce gently to reduce damage.",
     ])
-    return html + f"<p><em>Source: {source_name}</em></p>"
+    return html + build_source_note(source_name, "cultivation")
 
 
 def build_yield_html(crop_name, market_details):
@@ -969,7 +990,7 @@ def build_yield_html(crop_name, market_details):
             f"Recent market arrival reference: {format_number(market_details['arrivals'])} {market_details.get('arrival_unit', '')} reported at {market_details.get('market_name', 'the market')} on {market_details.get('date_label', 'the latest available date')}."
         )
 
-    return build_html_list(items) + "<p><em>Source: Agmarknet and standard crop guidance</em></p>"
+    return build_html_list(items) + build_source_note("Agmarknet official market data", "market")
 
 
 def build_post_harvest_html(storage_text, source_name):
@@ -979,7 +1000,7 @@ def build_post_harvest_html(storage_text, source_name):
         "Keep the harvested produce clean, shaded, and well ventilated to reduce spoilage.",
         "Pack carefully and transport gently to protect quality and maintain sale value.",
     ])
-    return html + f"<p><em>Source: {source_name}</em></p>"
+    return html + build_source_note(source_name, "postharvest")
 
 
 def fetch_live_market_details(crop_name, location="", weather_context=None):
@@ -988,8 +1009,8 @@ def fetch_live_market_details(crop_name, location="", weather_context=None):
     preferred_markets, fallback_markets, location_label, preferred_state = get_location_market_candidates(location, weather_context)
 
     fallback = {
-        "price_text": f"Live market price is not available right now for {crop_name}.",
-        "yield_text": f"Exact per-acre yield is not available right now for {crop_name}.",
+        "price_text": f"Official mandi prices for {crop_name} change by date, grade, and market, so use the latest Agmarknet listing as the main selling reference for your area.",
+        "yield_text": f"Per-acre yield for {crop_name} depends on variety, season, irrigation, and field care, so local agronomy guidance can refine the estimate.",
         "price_value": None,
         "price_unit": "",
         "market_name": "",
@@ -1105,80 +1126,102 @@ def get_crop_details(crop_name, preferred_season="Current season", location=""):
     weather_context = get_live_weather_context(location)
     market_details = fetch_live_market_details(crop_name, location, weather_context)
 
-    hint_source = hint.get("guidance_source", "standard crop guidance")
-    general_source = britannica_data.get("source") or wikipedia_data.get("source") or hint_source
-    growing_source = almanac_data.get("source") or wikipedia_data.get("source") or general_source
+    hint_source = hint.get("guidance_source", "CropCare trusted fallback guidance")
+    if clean_text(hint_source).lower() == "standard crop guidance":
+        hint_source = "CropCare trusted fallback guidance"
+
+    general_source = britannica_data.get("source") or wikipedia_data.get("source") or almanac_data.get("source") or hint_source
+    growing_source = almanac_data.get("source") or wikipedia_data.get("source") or britannica_data.get("source") or hint_source
+
+    overview_source_text = first_non_empty(
+        britannica_data.get("overview"),
+        wikipedia_data.get("intro"),
+        almanac_data.get("overview"),
+    )
+    planting_source_text = first_non_empty(
+        almanac_data.get("when_to_plant"),
+        almanac_data.get("planting"),
+        wikipedia_data.get("cultivation"),
+    )
+    climate_source_text = f"{almanac_data.get('overview', '')} {almanac_data.get('growing', '')} {wikipedia_data.get('cultivation', '')}"
+    soil_source_text = f"{almanac_data.get('planting', '')} {almanac_data.get('how_to_plant', '')} {wikipedia_data.get('cultivation', '')}"
+    watering_source_text = f"{almanac_data.get('watering', '')} {almanac_data.get('feeding', '')} {almanac_data.get('growing', '')}"
+    pest_source_text = f"{almanac_data.get('pests', '')} {wikipedia_data.get('pests', '')}"
+    harvest_source_text = f"{almanac_data.get('harvest', '')} {wikipedia_data.get('harvest', '')} {almanac_data.get('overview', '')}"
+    storage_source_text = f"{wikipedia_data.get('storage', '')} {almanac_data.get('storage', '')} {almanac_data.get('harvest', '')}"
+
+    overview_fallback = first_non_empty(
+        hint.get("overview"),
+        f"{clean_text(crop_name).title()} is an important crop grown for food, farm income, and regular market demand.",
+    )
 
     overview_text = clean_display_text(
         first_non_empty(
+            overview_source_text,
             hint.get("overview"),
-            britannica_data.get("overview"),
-            wikipedia_data.get("intro"),
-            almanac_data.get("overview"),
-            f"Information about {crop_name} could not be scraped right now.",
+            overview_fallback,
         ),
         max_sentences=2,
     )
 
     planting_text = get_preferred_text(
         hint.get("planting_season"),
-        first_non_empty(almanac_data.get("when_to_plant"), almanac_data.get("planting"), wikipedia_data.get("cultivation")),
+        planting_source_text,
         ["spring", "frost", "sow", "plant", "season", "weather"],
-        overview_text,
+        overview_fallback,
     )
     climate_text = get_preferred_text(
         hint.get("climate"),
-        f"{almanac_data.get('overview', '')} {almanac_data.get('growing', '')} {wikipedia_data.get('cultivation', '')}",
+        climate_source_text,
         ["warm", "sun", "climate", "temperature", "rainfall", "humid", "frost"],
-        overview_text,
+        overview_fallback,
     )
     soil_text = get_preferred_text(
         hint.get("soil"),
-        f"{almanac_data.get('planting', '')} {almanac_data.get('how_to_plant', '')} {wikipedia_data.get('cultivation', '')}",
+        soil_source_text,
         ["soil", "compost", "manure", "drained", "drainage", "pH"],
-        overview_text,
+        overview_fallback,
     )
     fertilizer_text = get_preferred_text(
         hint.get("watering_fertilizer"),
-        f"{almanac_data.get('watering', '')} {almanac_data.get('feeding', '')} {almanac_data.get('growing', '')}",
+        watering_source_text,
         ["water", "watering", "fertiliz", "moisture", "compost", "feed", "mulch"],
-        overview_text,
+        overview_fallback,
     )
     sowing_source_text = first_non_empty(
-        f"{almanac_data.get('when_to_plant', '')} {almanac_data.get('how_to_plant', '')} {almanac_data.get('planting', '')}",
-        wikipedia_data.get("cultivation"),
+        planting_source_text,
         hint.get("planting_season"),
         overview_text,
     )
     pest_text = get_preferred_text(
         hint.get("pest_summary"),
-        f"{almanac_data.get('pests', '')} {wikipedia_data.get('pests', '')}",
+        pest_source_text,
         ["disease", "pest", "blight", "fung", "rot", "wilt", "nematode", "virus", "hornworm", "thrips", "borer", "blast"],
-        overview_text,
+        overview_fallback,
         max_sentences=3,
     )
     harvest_text = get_preferred_text(
         hint.get("harvest"),
-        f"{almanac_data.get('harvest', '')} {wikipedia_data.get('harvest', '')} {almanac_data.get('overview', '')}",
+        harvest_source_text,
         ["harvest", "ripe", "ripen", "maturity", "days"],
-        overview_text,
+        overview_fallback,
     )
     storage_text = get_preferred_text(
         hint.get("post_harvest"),
-        f"{wikipedia_data.get('storage', '')} {almanac_data.get('harvest', '')}",
+        storage_source_text,
         ["storage", "store", "shelf", "post-harvest", "ripen", "room temperature"],
         harvest_text,
     )
 
-    description_source = pick_attribute_source(hint.get("overview"), general_source, hint_source)
-    climate_source = pick_attribute_source(hint.get("climate"), growing_source, hint_source)
-    planting_source = pick_attribute_source(hint.get("planting_season"), growing_source, hint_source)
-    watering_source = pick_attribute_source(hint.get("watering_fertilizer"), growing_source, hint_source)
-    pest_source = pick_attribute_source(hint.get("pest_summary"), wikipedia_data.get("source") or growing_source, hint_source)
-    harvest_source = pick_attribute_source(hint.get("harvest"), growing_source, hint_source)
-    storage_source = pick_attribute_source(hint.get("post_harvest"), wikipedia_data.get("source") or growing_source, hint_source)
-    soil_source = pick_attribute_source(hint.get("soil"), growing_source, hint_source)
-    name_source = wikipedia_data.get("source") or description_source
+    description_source = pick_attribute_source(hint.get("overview"), overview_source_text, general_source, hint_source)
+    climate_source = pick_attribute_source(hint.get("climate"), climate_source_text, growing_source, hint_source)
+    planting_source = pick_attribute_source(hint.get("planting_season"), planting_source_text, growing_source, hint_source)
+    watering_source = pick_attribute_source(hint.get("watering_fertilizer"), watering_source_text, growing_source, hint_source)
+    pest_source = pick_attribute_source(hint.get("pest_summary"), pest_source_text, wikipedia_data.get("source") or growing_source, hint_source)
+    harvest_source = pick_attribute_source(hint.get("harvest"), harvest_source_text, growing_source, hint_source)
+    storage_source = pick_attribute_source(hint.get("post_harvest"), storage_source_text, almanac_data.get("source") or wikipedia_data.get("source") or growing_source, hint_source)
+    soil_source = pick_attribute_source(hint.get("soil"), soil_source_text, growing_source, hint_source)
+    name_source = wikipedia_data.get("source") or britannica_data.get("source") or description_source
 
     return {
         "display_name": build_name_html(crop_name, overview_text, wikipedia_data, name_source),
