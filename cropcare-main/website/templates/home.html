@@ -3,106 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CropCare</title>
+    <title>CropCare | Smart Agriculture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(rgba(12, 45, 18, 0.68), rgba(12, 45, 18, 0.68)), url("{{ url_for('static', filename='background.png') }}") center/cover no-repeat;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
+                        url("{{ url_for('static', filename='background.png') }}") center/cover no-repeat fixed;
         }
-
-        .wrapper {
-            width: 100%;
-            max-width: 980px;
-            text-align: center;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .hero-logo {
-            display: block;
-            width: min(100%, 560px);
-            margin: 0 auto 14px;
-            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.22));
-        }
-
-        .subtitle {
-            font-size: 1.08rem;
-            margin-bottom: 34px;
-            color: #e6f6e9;
-        }
-
-        .sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 22px;
-        }
-
-        .card {
-            display: block;
-            text-decoration: none;
-            color: #1f2937;
-            background: rgba(255, 255, 255, 0.94);
-            border-radius: 18px;
-            padding: 28px 24px;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-align: left;
-        }
-
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
-        }
-
-        .card h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #009b4d;
-        }
-
-        .card p {
-            margin: 0 0 16px;
-            line-height: 1.6;
-        }
-
-        .open-label {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 8px;
-            background: #009b4d;
-            color: white;
-            font-weight: bold;
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-10px);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
     </style>
 </head>
-<body>
-    <div class="wrapper">
-        <img src="{{ url_for('static', filename='logobg1.png') }}" alt="CropCare" class="hero-logo">
-        <p class="subtitle">Choose one section to continue.</p>
+<body class="min-h-screen flex items-center justify-center p-6">
 
-        <div class="sections">
-            <a class="card" href="{{ url_for('crop_info') }}">
-                <h2>CropInfo</h2>
-                <p>Search for a crop and view simple, structured information with sources, live price data, season guidance, and optional weather-based planning.</p>
-                <span class="open-label">Open CropInfo</span>
+    <div class="max-w-5xl w-full">
+        <div class="text-center mb-16 animate-fade-in">
+            <img src="{{ url_for('static', filename='logobg1.png') }}" alt="CropCare" 
+                 class="mx-auto w-full max-w-[400px] drop-shadow-2xl mb-6">
+            <div class="h-1 w-24 bg-emerald-500 mx-auto rounded-full mb-6"></div>
+            <p class="text-emerald-50/70 text-xl font-light tracking-widest uppercase">Intelligence for a Greener Future</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <a href="{{ url_for('crop_info') }}" class="glass-card group p-10 rounded-[2.5rem] flex flex-col">
+                <div class="mb-8">
+                    <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-4">Crop Insights</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        Access structured data on seasonal cycles, market trends, and precision cultivation strategies.
+                    </p>
+                </div>
+                <div class="mt-auto flex items-center text-emerald-400 font-bold group-hover:gap-4 transition-all">
+                    Launch Database
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </a>
 
-            <a class="card" href="{{ url_for('index') }}">
-                <h2>AI Disease Detection</h2>
-                <p>Open the image upload page and use the existing AI tool for plant disease detection from a crop image.</p>
-                <span class="open-label">Open AI Disease Detection</span>
+            <a href="{{ url_for('index') }}" class="glass-card group p-10 rounded-[2.5rem] flex flex-col">
+                <div class="mb-8">
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-4">Neural Scanner</h2>
+                    <p class="text-gray-400 leading-relaxed">
+                        Instant AI diagnosis of crop diseases using computer vision with suggested chemical & organic treatments.
+                    </p>
+                </div>
+                <div class="mt-auto flex items-center text-blue-400 font-bold group-hover:gap-4 transition-all">
+                    Identify Disease
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </a>
         </div>
+
+        <div class="mt-20 text-center">
+            <span class="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white/30 text-xs font-medium tracking-widest">
+                © 2026 CROPCARE ECOSYSTEM
+            </span>
+        </div>
     </div>
+
 </body>
 </html>
-

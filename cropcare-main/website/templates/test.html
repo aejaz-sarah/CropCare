@@ -1,189 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CropCare - Crop Info</title>
+    <title>CropCare | Intelligence Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap");
-
-      body {
-        background: url("{{ url_for('static', filename='background.png') }}");
-        background-size: cover;
-        background-position: center;
-        font-family: Arial, sans-serif;
-      }
-
-      .container {
-        width: 720px;
-        min-height: 470px;
-        margin: 140px auto;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.37);
-        padding-bottom: 30px;
-      }
-
-      .page-title {
-        width: fit-content;
-        margin: 34px auto 22px;
-        padding: 14px 28px;
-        text-align: center;
-        color: #ffffff;
-        font-size: 2.1rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        border: 2px solid rgba(255, 255, 255, 0.75);
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(20, 83, 45, 0.82), rgba(76, 175, 80, 0.55));
-        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
-      }
-
-      .search-container {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-      }
-
-      form {
-        width: 100%;
-        max-width: 520px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .search-row {
-        display: flex;
-        align-items: center;
-        border: 1px solid #f3f6fa;
-        border-radius: 24px;
-        padding: 10px;
-        background-color: #f3f6fa;
-        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .search-input,
-      .season-select {
-        width: 100%;
-        border: none;
-        padding: 10px 12px;
-        font-size: 16px;
-        outline: none;
-        background-color: #f3f6fa;
-        border-radius: 12px;
-      }
-
-      .season-select {
-        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .search-button {
-        background-color: #4285f4;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        padding: 10px 12px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s;
-      }
-
-      .search-button:hover {
-        background-color: #357ae8;
-      }
-
-      .helper-text {
-        color: #ffffff;
-        text-align: center;
-        margin: 0;
-        font-size: 14px;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-      }
-
-      ::placeholder {
-        font-size: 18px;
-        color: #888888;
-      }
-
-      .ai {
-        margin-top: 28px;
-        text-align: center;
-      }
-
-      #myBtn {
-        font-family: "Montserrat", sans-serif;
-        padding: 12px 24px;
-        text-decoration: none;
-        font-size: 1rem;
-        font-weight: bold;
-        color: #fff;
-        background-color: #5e60ce;
-        border: 2px solid #5e60ce;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        outline: none;
-      }
-
-      #myBtn:hover {
-        background-color: #4ea8de;
-        transform: scale(1.05);
-      }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), 
+                        url("{{ url_for('static', filename='background.png') }}") center/cover no-repeat fixed;
+            color: white;
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #10b981;
+            outline: none;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
     </style>
-  </head>
-  <body>
-    <div class="container glass">
-      <div class="page-title">Crop Information</div>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
 
-      <div class="search-container">
-        <form method="POST" action="{{ url_for('crop_info') }}">
-          <div class="search-row">
-            <input
-              type="text"
-              class="search-input"
-              name="query"
-              id="query"
-              placeholder="Search for crop..."
-              required
-            />
-            <button type="submit" class="search-button">🔍</button>
-          </div>
+    <div class="max-w-xl w-full">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold mb-4">Crop Intelligence</h1>
+            <p class="text-emerald-400/80 text-sm tracking-widest uppercase font-bold">Precision Agriculture Database</p>
+        </div>
 
-          <select class="season-select" name="preferred_season">
-            <option value="Current season">Use current season</option>
-            <option value="Spring">Spring</option>
-            <option value="Summer">Summer</option>
-            <option value="Monsoon">Monsoon / Rainy</option>
-            <option value="Autumn">Autumn</option>
-            <option value="Winter">Winter</option>
-          </select>
+        <div class="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl">
+            <form method="POST" action="{{ url_for('crop_info') }}" class="space-y-6">
+                
+                <div class="relative group">
+                    <input type="text" name="query" placeholder="What are you growing? (e.g. Tomato)" required 
+                           class="w-full glass-input py-5 px-6 rounded-2xl text-lg placeholder:text-gray-500">
+                    <span class="absolute right-6 top-5 text-2xl group-hover:scale-110 transition-transform">🔍</span>
+                </div>
 
-          <input
-            type="text"
-            class="season-select"
-            name="location"
-            placeholder="Optional: enter your city for live weather-based planning"
-          />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-emerald-500 ml-2 tracking-widest">Season</label>
+                        <select name="preferred_season" class="w-full glass-input py-4 px-4 rounded-xl text-sm appearance-none cursor-pointer text-white bg-transparent">
+    <option value="Spring" class="bg-black">Spring</option>
+    <option value="Summer" class="bg-black">Summer</option>
+    <option value="Monsoon" class="bg-black">Monsoon / Rainy</option>
+    <option value="Autumn" class="bg-black">Autumn</option>
+    <option value="Winter" class="bg-black">Winter</option>
+</select>
+                    </div>
 
-          <p class="helper-text">
-            Choose a crop, season, and optional city to get a simple growing plan with live price and weather-based guidance.
-          </p>
-        </form>
-      </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] uppercase font-bold text-emerald-500 ml-2 tracking-widest">Location</label>
+                        <input type="text" name="location" placeholder="City (Optional)" 
+                               class="w-full glass-input py-4 px-4 rounded-xl text-sm">
+                    </div>
+                </div>
 
-      <div class="ai">
-        <a href="{{ url_for('home') }}" id="myBtn" style="margin-right: 10px; background-color: #2d6a4f; border-color: #2d6a4f;">Back to Home</a>
-        <a href="{{ url_for('index') }}" id="myBtn">AI Disease Detection</a>
-      </div>
+                <button type="submit" class="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-emerald-900/40 active:scale-95">
+                    Generate Report
+                </button>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-white/5">
+                <div class="flex justify-between items-center">
+                    <a href="{{ url_for('home') }}" class="text-xs text-gray-500 hover:text-white transition-colors flex items-center">
+                        <span class="mr-2">←</span> Dashboard
+                    </a>
+                    <a href="{{ url_for('index') }}" class="text-xs text-emerald-500 hover:text-emerald-400 font-bold transition-colors">
+                        Try AI Disease Scanner
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <p class="text-center mt-8 text-white/20 text-[10px] uppercase tracking-[0.3em]">
+            Real-time data powered by Agmarknet & Open-Meteo
+        </p>
     </div>
-  </body>
+
+</body>
 </html>
